@@ -1,0 +1,85 @@
+---
+- name: The first play
+  hosts: localhost
+  tasks:
+    - name: add a host
+      add_host:
+        name: "{{ new_ip }}:{{ new_port }}"
+      vars:
+        new_ip: "jgjh.de"
+        new_port: 1234
+
+    - name: add a host
+      add_host:
+        hostname: "{{ new_ip }}"
+        ansible_host: "{{ inventory_hostname }}"
+        ansible_port: "{{ new_port }}"
+      vars:
+        new_ip: "testhost"
+        inventory_hostname: "testhost.de"
+        new_port: 8080
+
+    - name: add host
+      add_host:
+        hostname: "{{ new_ip }}"
+        groups:
+         - group1
+         - group2
+        foo: 42
+      vars:
+        new_ip: "werrr.de" 
+
+    - name: hallowelt
+      shell: "echo cool"
+
+    - name:  blabla
+      shell:  'ls -l /'
+      register: unique_part
+
+    - name: too lazy
+      set_fact:
+         list_example: "{{ unique_part.stdout }}"
+
+    - name: import
+      template: 
+          src=foo.cfg.j2 
+          dest={{remote_install_path}}/foo.cfg
+
+    - name: fuck
+      command: /bin/echo foo
+
+    - name: Install please
+      apt:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - postfix
+      # - foo=1.00
+        state: latest
+        # default_release: squeeze-backports
+        update_cache: yes
+        install_recommends: no
+
+    - name: postfix is cool to install
+      lineinfile:
+        dest: /etc/postfix/main.cf
+        state: present
+        regexp: '^#test'
+        line: '#test'
+      notify: reload postfix
+
+    #The first name the makes sense
+    - name: disable and stop the postfix service
+      service:
+        enabled: no
+        name: postfix
+        state: stopped
+
+  handlers:
+    - name: reload postfix
+      service:
+        name: postfix
+        state: reloaded
+  vars:
+    remote_install_path: "~"
+
